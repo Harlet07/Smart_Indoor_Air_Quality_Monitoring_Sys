@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Air Quality Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    * {
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+      color:white;
+      text-align:center;
+    }
+
+    h1 {
+      margin-top:20px;
+      font-size:28px;
+    }
+
+    .container {
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:20px;
+      padding:30px;
+    }
+
+    .card {
+      width:220px;
+      padding:20px;
+      border-radius:20px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .title {
+      font-size:16px;
+      opacity:0.8;
+    }
+
+    .value {
+      font-size:34px;
+      font-weight:bold;
+      margin-top:10px;
+    }
+
+    .status {
+      margin:20px auto;
+      width:300px;
+      padding:15px;
+      border-radius:15px;
+      font-size:22px;
+      font-weight:bold;
+      transition: 0.3s;
+    }
+
+    .footer {
+      margin-top:20px;
+      font-size:14px;
+      opacity:0.7;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🌍 Smart Indoor Air Quality & Gas Safety</h1>
+
+<div class="container">
+
+  <div class="card">
+    <div class="title">LPG / Gas Level</div>
+    <div class="value" id="gas">--</div>
+  </div>
+
+  <div class="card">
+    <div class="title">Temperature</div>
+    <div class="value" id="temp">--</div>
+  </div>
+
+  <div class="card">
+    <div class="title">Humidity</div>
+    <div class="value" id="hum">--</div>
+  </div>
+
+</div>
+
+<div id="status" class="status">Loading...</div>
+
+<div class="footer">
+  Real-time Monitoring | IoT Based System
+</div>
+
+<script>
+const channelID = "YOUR_CHANNEL_ID";  
+
+async function fetchData() {
+  try {
+  const readKey = "5TUJ7HI3YCW8FLHP";
+
+  const res = await fetch(`https://api.thingspeak.com/channels/${channelID}/feeds/last.json?api_key=${readKey}`);
+    const data = await res.json();
+
+    document.getElementById("gas").innerText = data.field1;
+    document.getElementById("temp").innerText = data.field2 + " °C";
+    document.getElementById("hum").innerText = data.field3 + " %";
+
+    let statusDiv = document.getElementById("status");
+
+    // 🔥 MATCH WITH ESP32 LOGIC
+    if (data.field4 == "1") {
+      statusDiv.innerText = "🟢 SAFE (Normal Air)";
+      statusDiv.style.background = "#00c853";
+    } 
+    else if (data.field4 == "2") {
+      statusDiv.innerText = "🟡 WARNING (Moderate Gas)";
+      statusDiv.style.background = "#ffab00";
+    } 
+    else {
+      statusDiv.innerText = "🔴 DANGER (High Gas!)";
+      statusDiv.style.background = "#d50000";
+    }
+
+  } catch (error) {
+    document.getElementById("status").innerText = "Error loading data";
+  }
+}
+
+// refresh every 5 sec
+setInterval(fetchData, 5000);
+fetchData();
+</script>
+
+</body>
+</html>
