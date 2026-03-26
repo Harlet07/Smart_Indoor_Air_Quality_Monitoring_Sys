@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html class="dark" lang="en"><head>
+<html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>LUMINOUS OBSERVER | IoT Dashboard</title>
@@ -76,41 +76,226 @@
             },
         }
     </script>
+<script>
+        (() => {
+            const savedTheme = localStorage.getItem("luminous-theme");
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            const isDark = savedTheme ? savedTheme === "dark" : prefersDark;
+            document.documentElement.classList.toggle("dark", isDark);
+            document.documentElement.classList.toggle("light-theme", !isDark);
+        })();
+    </script>
 <style>
+        :root {
+            color-scheme: dark;
+            --page-bg: #0a0f14;
+            --page-fg: #eaeef6;
+            --panel-bg: rgba(20, 26, 32, 0.78);
+            --panel-strong: rgba(31, 38, 46, 0.88);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --panel-muted: #a7abb2;
+            --hero-glow-a: rgba(0, 242, 255, 0.12);
+            --hero-glow-b: rgba(47, 248, 1, 0.08);
+        }
+        /* light mode */
+        html.light-theme {
+            color-scheme: light;
+            --page-bg: #F6F8FB;
+            --page-fg: #0F172A;
+            --panel-bg: rgba(255, 255, 255, 0.92);
+            --panel-strong: rgba(255, 255, 255, 0.98);
+            --panel-border: #E5EAF2;
+            --panel-muted: #475569;
+            --hero-glow-a: rgba(37, 99, 235, 0.06);
+            --hero-glow-b: rgba(34, 197, 94, 0.05);
+        }
+
+
+
         body { font-family: 'Inter', sans-serif; }
         .font-headline { font-family: 'Space Grotesk', sans-serif; }
+        body {
+            background:
+                radial-gradient(circle at top left, var(--hero-glow-a), transparent 30%),
+                radial-gradient(circle at bottom right, var(--hero-glow-b), transparent 35%),
+                linear-gradient(180deg, var(--page-bg), var(--page-bg));
+            color: var(--page-fg);
+            transition: background-color 0.35s ease, color 0.35s ease;
+        }
         .glass-panel {
             backdrop-filter: blur(24px);
-            background-color: rgba(31, 38, 46, 0.6);
+            background-color: var(--panel-bg);
+            border-color: var(--panel-border);
         }
         .neon-glow-primary { box-shadow: 0 0 20px rgba(0, 242, 255, 0.15); }
         .neon-glow-secondary { box-shadow: 0 0 20px rgba(47, 248, 1, 0.15); }
         .neon-glow-error { box-shadow: 0 0 30px rgba(255, 113, 108, 0.3); }
-        
+        .panel-card {
+            background: var(--panel-bg);
+            border-color: var(--panel-border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+            transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+        }
+        .panel-card:hover {
+            transform: translateY(-2px);
+        }
+        .surface-shell {
+            background: color-mix(in srgb, var(--page-bg) 86%, transparent);
+            border-color: var(--panel-border);
+        }
+        .toolbar-btn {
+            color: var(--panel-muted);
+        }
+        .toolbar-btn:hover {
+            color: var(--page-fg);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .metric-chip {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--panel-border);
+        }
+        .analytics-frame {
+            background: color-mix(in srgb, var(--page-bg) 84%, black 16%);
+            border-color: var(--panel-border);
+        }
+        .chart-panel {
+            background: color-mix(in srgb, var(--page-bg) 92%, transparent);
+            border: 1px solid var(--panel-border);
+            border-radius: 1.5rem;
+            padding: 1rem;
+        }
+        .chart-panel svg {
+            display: block;
+            width: 100%;
+            height: 210px;
+        }
+        .chart-label {
+            color: var(--panel-muted);
+        }
+         .top-nav-shell {
+            width: min(calc(100% - 2rem), 72rem);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        @media (min-width: 1024px) {
+            .top-nav-shell {
+                width: min(calc(100% - 24rem), 72rem);
+                left: calc(50% + 8rem);
+                transform: translateX(-50%);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            right: 1.5rem;
+            bottom: 1.5rem;
+            z-index: 70;
+            max-width: 320px;
+            transform: translateY(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
         /* Custom Radial Gauges */
         .gauge-svg { transform: rotate(-90deg); }
         .gauge-bg { stroke: #1a2027; stroke-width: 8; fill: none; }
         .gauge-fill { stroke-linecap: round; stroke-width: 8; fill: none; transition: stroke-dashoffset 1s ease-out; }
+        .sparkline-path {
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-width: 3;
+        }
+
+        /*light mode override*/
+         html.light-theme .gauge-bg {
+            stroke: #E5EAF2;
+        }
+
+        html.light-theme nav,
+        html.light-theme aside {
+            background-color: rgba(255, 255, 255, 0.92) !important;
+            border-color: #E5EAF2 !important;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+        }
+
+        html.light-theme .toolbar-btn {
+            color: #64748B;
+        }
+
+        html.light-theme .toolbar-btn:hover {
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563EB;
+        }
+
+        html.light-theme .metric-chip {
+            background: #FFFFFF;
+            border: 1px solid #E5EAF2;
+        }
+
+        html.light-theme .text-on-surface,
+        html.light-theme .text-white {
+            color: #0F172A !important;
+        }
+
+        html.light-theme .text-on-surface-variant,
+        html.light-theme .text-neutral-400,
+        html.light-theme .text-neutral-500 {
+            color: #475569 !important;
+        }
+
+        html.light-theme .panel-card,
+        html.light-theme .surface-shell,
+        html.light-theme .analytics-frame,
+        html.light-theme .chart-panel {
+            background: #FFFFFF !important;
+            border-color: #E5EAF2 !important;
+        }
+
+        html.light-theme #status-container {
+            background: #FFFFFF;
+            border-color: rgba(34, 197, 94, 0.22) !important;
+        }
+
+
+        @media (min-width: 1024px) {
+            .top-nav-shell {
+                width: min(calc(100% - 22rem), 72rem);
+                left: calc(50% + 9rem);
+                transform: translateX(-50%);
+            }
+        }
+
     </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
 <!-- Top Navigation (From JSON Authority) -->
-<nav class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center bg-neutral-900/60 backdrop-blur-xl rounded-full mt-4 mx-auto max-w-4xl px-6 py-2 border border-white/10 shadow-[0_0_20px_rgba(0,242,255,0.15)]">
+  <nav class="top-nav-shell fixed top-4 z-50 flex justify-between items-center bg-neutral-900/60 backdrop-blur-xl rounded-full px-6 py-2 border border-white/10
+  shadow-[0_0_20px_rgba(0,242,255,0.15)]">
 <div class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-cyan-200 bg-clip-text text-transparent font-['Space_Grotesk'] tracking-tight">
             LUMINOUS OBSERVER
         </div>
 <div class="hidden md:flex items-center gap-8 font-['Space_Grotesk'] tracking-tight text-sm uppercase">
-<a id="top-nav-dashboard" class="text-cyan-400 drop-shadow-[0_0_8px_rgba(0,242,255,0.6)] font-bold cursor-pointer">SYSTEM</a>
+<a id="top-nav-dashboard" class="text-blue-600 font-bold cursor-pointer">SYSTEM</a>
 <a id="top-nav-analytics" class="text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer">ANALYTICS</a>
 </div>
 <div class="flex items-center gap-4">
-<button class="hover:bg-white/5 hover:backdrop-blur-2xl transition-all duration-300 p-2 rounded-full scale-95 active:scale-90 text-neutral-400">
-<span class="material-symbols-outlined">light_mode</span>
+<button id="theme-toggle" class="toolbar-btn transition-all duration-300 p-2 rounded-full scale-95 active:scale-90" type="button" aria-label="Toggle theme">
+<span id="theme-icon" class="material-symbols-outlined">light_mode</span>
 </button>
-<button class="hover:bg-white/5 hover:backdrop-blur-2xl transition-all duration-300 p-2 rounded-full scale-95 active:scale-90 text-neutral-400">
+<button id="refresh-button" class="toolbar-btn transition-all duration-300 p-2 rounded-full scale-95 active:scale-90" type="button" aria-label="Refresh data">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+<button id="notify-button" class="toolbar-btn transition-all duration-300 p-2 rounded-full scale-95 active:scale-90" type="button" aria-label="Notifications">
 <span class="material-symbols-outlined">notifications</span>
 </button>
-<button class="hover:bg-white/5 hover:backdrop-blur-2xl transition-all duration-300 p-2 rounded-full scale-95 active:scale-90 text-neutral-400">
+<button id="settings-button" class="toolbar-btn transition-all duration-300 p-2 rounded-full scale-95 active:scale-90" type="button" aria-label="Open analytics">
 <span class="material-symbols-outlined">settings</span>
 </button>
 </div>
@@ -128,7 +313,7 @@
 </div>
 </div>
 <nav class="font-['Inter'] font-medium text-xs tracking-widest uppercase">
-<a id="nav-dashboard" class="bg-cyan-500/10 text-cyan-400 border-r-4 border-cyan-400 px-6 py-4 flex items-center gap-4 group transition-all duration-200 cursor-pointer">
+<a id="nav-dashboard" class="bg-blue-600/10 text-blue-600 border-r-4 border-blue-600 px-6 py-4 flex items-center gap-4 group transition-all duration-200 cursor-pointer">
 <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">dashboard</span>
                     Dashboard
                 </a>
@@ -156,11 +341,41 @@
 </div>
 </div>
 
+<section class="max-w-7xl mx-auto mb-6">
+<div class="panel-card rounded-[2rem] border p-6 md:p-8">
+<div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+<div class="max-w-2xl">
+<p class="text-xs uppercase tracking-[0.3em] text-on-surface-variant">Air Monitoring Console</p>
+<h1 class="mt-3 text-4xl md:text-5xl font-headline font-black tracking-tight">Realtime risk view with AQI insight.</h1>
+<p class="mt-4 text-sm md:text-base text-on-surface-variant">The dashboard now keeps the core sensor gauges, adds a derived AQI gauge, and shows recent sensor movement without forcing you into the analytics tab.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 min-w-full lg:min-w-[460px]">
+<div class="metric-chip rounded-2xl p-4">
+<p class="text-[11px] uppercase tracking-[0.2em] text-on-surface-variant">Updated</p>
+<p id="last-updated" class="mt-2 text-lg font-headline font-bold">Waiting</p>
+</div>
+<div class="metric-chip rounded-2xl p-4">
+<p class="text-[11px] uppercase tracking-[0.2em] text-on-surface-variant">AQI Band</p>
+<p id="aqi-band" class="mt-2 text-sm md:text-base font-headline font-bold tracking-tight leading-tight">Unknown</p>
+</div>
+<div class="metric-chip rounded-2xl p-4">
+<p class="text-[11px] uppercase tracking-[0.2em] text-on-surface-variant">Gas Trend</p>
+<p id="gas-trend" class="mt-2 text-lg font-headline font-bold">Steady</p>
+</div>
+<div class="metric-chip rounded-2xl p-4">
+<p class="text-[11px] uppercase tracking-[0.2em] text-on-surface-variant">Comfort</p>
+<p id="comfort-score" class="mt-2 text-lg font-headline font-bold">Normal</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
 <!-- Dashboard View -->
-<div id="dashboard-view" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+<div id="dashboard-view" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 <!-- 2. Gauge Meters Section (3 Gauges) -->
 <!-- Gauge 1: LPG -->
-<div class="surface-container-high rounded-xl p-8 border border-white/5 relative overflow-hidden group">
+<div class="panel-card rounded-[2rem] p-8 border relative overflow-hidden group">
 <div class="absolute -right-4 -top-4 w-32 h-32 bg-secondary/5 rounded-full blur-3xl group-hover:bg-secondary/10 transition-colors"></div>
 <div class="flex justify-between items-start mb-6">
 <div>
@@ -171,7 +386,7 @@
 </div>
 <div class="flex flex-col items-center">
 <div class="relative w-48 h-48">
-<svg class="w-full h-full gauge-svg" viewbox="0 0 100 100">
+<svg class="w-full h-full gauge-svg" viewBox="0 0 100 100">
 <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
 <circle id="gas-fill" class="gauge-fill stroke-secondary" cx="50" cy="50" r="40" style="stroke-dasharray: 251.2; stroke-dashoffset: 251.2;"></circle>
 </svg>
@@ -186,7 +401,7 @@
 </div>
 </div>
 <!-- Gauge 2: Temperature -->
-<div class="surface-container-high rounded-xl p-8 border border-white/5 relative overflow-hidden group">
+<div class="panel-card rounded-[2rem] p-8 border relative overflow-hidden group">
 <div class="absolute -right-4 -top-4 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
 <div class="flex justify-between items-start mb-6">
 <div>
@@ -197,7 +412,7 @@
 </div>
 <div class="flex flex-col items-center">
 <div class="relative w-48 h-48">
-<svg class="w-full h-full gauge-svg" viewbox="0 0 100 100">
+<svg class="w-full h-full gauge-svg" viewBox="0 0 100 100">
 <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
 <circle id="temp-fill" class="gauge-fill stroke-primary" cx="50" cy="50" r="40" style="stroke-dasharray: 251.2; stroke-dashoffset: 251.2;"></circle>
 </svg>
@@ -212,7 +427,7 @@
 </div>
 </div>
 <!-- Gauge 3: Humidity -->
-<div class="surface-container-high rounded-xl p-8 border border-white/5 relative overflow-hidden group">
+<div class="panel-card rounded-[2rem] p-8 border relative overflow-hidden group">
 <div class="absolute -right-4 -top-4 w-32 h-32 bg-primary-fixed/5 rounded-full blur-3xl group-hover:bg-primary-fixed/10 transition-colors"></div>
 <div class="flex justify-between items-start mb-6">
 <div>
@@ -223,7 +438,7 @@
 </div>
 <div class="flex flex-col items-center">
 <div class="relative w-48 h-48">
-<svg class="w-full h-full gauge-svg" viewbox="0 0 100 100">
+<svg class="w-full h-full gauge-svg" viewBox="0 0 100 100">
 <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
 <circle id="hum-fill" class="gauge-fill stroke-primary-fixed" cx="50" cy="50" r="40" style="stroke-dasharray: 251.2; stroke-dashoffset: 251.2;"></circle>
 </svg>
@@ -237,24 +452,107 @@
 </div>
 </div>
 </div>
+<!-- Gauge 4: AQI -->
+<div class="panel-card rounded-[2rem] p-8 border relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-32 h-32 bg-error/10 rounded-full blur-3xl group-hover:bg-tertiary/15 transition-colors"></div>
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="text-on-surface-variant font-label text-xs tracking-widest uppercase">Derived Air Quality</p>
+<h3 class="text-2xl font-headline font-bold mt-1">AQI_SIGNAL</h3>
 </div>
+<span id="aqi-icon" class="material-symbols-outlined text-tertiary">air</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="relative w-48 h-48">
+<svg class="w-full h-full gauge-svg" viewBox="0 0 100 100">
+<circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+<circle id="aqi-fill" class="gauge-fill stroke-tertiary" cx="50" cy="50" r="40" style="stroke-dasharray: 251.2; stroke-dashoffset: 251.2;"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span id="aqi-value" class="text-4xl font-headline font-black text-on-surface">--</span>
+<span class="text-[10px] text-on-surface-variant tracking-widest uppercase">AQI</span>
+</div>
+</div>
+<div class="mt-4 flex gap-2">
+<span id="aqi-status-label" class="px-3 py-1 bg-tertiary/10 text-tertiary text-[10px] font-bold rounded-full">CALCULATING</span>
+</div>
+</div>
+</div>
+</div>
+
+<section class="max-w-7xl mx-auto mt-6">
+<div class="panel-card rounded-[2rem] border p-6 md:p-8">
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+<div>
+<p class="text-xs uppercase tracking-[0.28em] text-on-surface-variant">Quick Visual</p>
+<h3 class="text-2xl font-headline font-bold mt-2">Sensor momentum snapshot</h3>
+</div>
+<p class="text-sm text-on-surface-variant max-w-xl">This local chart keeps a rolling view of the last readings so you can catch movement even before opening the detailed feeds.</p>
+</div>
+<div class="surface-shell rounded-[1.5rem] border p-4 md:p-5">
+<svg id="overview-chart" class="w-full h-[220px]" viewBox="0 0 900 220" preserveAspectRatio="none" aria-label="Sensor trend overview">
+<path id="overview-grid" d="" stroke="rgba(167,171,178,0.18)" stroke-width="1" fill="none"></path>
+<path id="spark-gas" class="sparkline-path" stroke="#2ff801" d=""></path>
+<path id="spark-temp" class="sparkline-path" stroke="#99f7ff" d=""></path>
+<path id="spark-hum" class="sparkline-path" stroke="#00f1fe" d=""></path>
+<path id="spark-aqi" class="sparkline-path" stroke="#fde800" d=""></path>
+</svg>
+<div class="mt-4 flex flex-wrap gap-3 text-xs uppercase tracking-[0.2em] text-on-surface-variant">
+<span class="metric-chip rounded-full px-3 py-2">Gas</span>
+<span class="metric-chip rounded-full px-3 py-2">Temperature</span>
+<span class="metric-chip rounded-full px-3 py-2">Humidity</span>
+<span class="metric-chip rounded-full px-3 py-2">AQI</span>
+</div>
+</div>
+</div>
+</section>
 
 <!-- Analytics View -->
 <div id="analytics-view" class="max-w-7xl mx-auto hidden flex flex-col gap-6">
-    <div class="surface-container-high rounded-xl p-8 border border-white/5">
+    <div class="panel-card rounded-[2rem] p-8 border">
         <h3 class="text-xl font-headline font-bold mb-6 tracking-tight">Real-Time Data Streams</h3>
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="charts-container">
-            <div class="bg-black/20 rounded-lg p-2 min-h-[300px] flex items-center justify-center border border-white/5 overflow-hidden">
-                <iframe id="chart-gas" width="100%" height="300" style="border: none;" src=""></iframe>
+            <div class="chart-panel min-h-[300px]">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-headline text-lg font-bold">Gas Trend</h4>
+                    <span class="chart-label text-xs uppercase tracking-[0.22em]">PPM</span>
+                </div>
+                <svg id="chart-gas" viewBox="0 0 1000 210" preserveAspectRatio="none"></svg>
             </div>
-            <div class="bg-black/20 rounded-lg p-2 min-h-[300px] flex items-center justify-center border border-white/5 overflow-hidden">
-                <iframe id="chart-temp" width="100%" height="300" style="border: none;" src=""></iframe>
+            <div class="chart-panel min-h-[300px]">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-headline text-lg font-bold">Temperature Trend</h4>
+                    <span class="chart-label text-xs uppercase tracking-[0.22em]">Celsius</span>
+                </div>
+                <svg id="chart-temp" viewBox="0 0 1000 210" preserveAspectRatio="none"></svg>
             </div>
-            <div class="bg-black/20 rounded-lg p-2 min-h-[300px] flex items-center justify-center border border-white/5 overflow-hidden">
-                <iframe id="chart-hum" width="100%" height="300" style="border: none;" src=""></iframe>
+            <div class="chart-panel min-h-[300px]">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-headline text-lg font-bold">Humidity Trend</h4>
+                    <span class="chart-label text-xs uppercase tracking-[0.22em]">Percent</span>
+                </div>
+                <svg id="chart-hum" viewBox="0 0 1000 210" preserveAspectRatio="none"></svg>
             </div>
-            <div class="bg-black/20 rounded-lg p-2 min-h-[300px] flex items-center justify-center border border-white/5 overflow-hidden">
-                <iframe id="chart-status" width="100%" height="300" style="border: none;" src=""></iframe>
+            <div class="chart-panel min-h-[300px]">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-headline text-lg font-bold">System Status Trend</h4>
+                    <span class="chart-label text-xs uppercase tracking-[0.22em]">Level</span>
+                </div>
+                <svg id="chart-status" viewBox="0 0 1000 210" preserveAspectRatio="none"></svg>
+            </div>
+            <div class="chart-panel min-h-[300px] xl:col-span-2">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Local Trend</p>
+                        <h4 class="text-2xl font-headline font-bold mt-2">AQI progress graph</h4>
+                    </div>
+                    <p class="text-sm text-on-surface-variant">This graph is computed directly in the dashboard from the recent fetched values, so it works even without a dedicated ThingSpeak AQI field.</p>
+                </div>
+                <svg id="aqi-chart" class="w-full h-[240px]" viewBox="0 0 1000 240" preserveAspectRatio="none" aria-label="AQI trend graph">
+                    <path id="aqi-grid" d="" stroke="rgba(167,171,178,0.18)" stroke-width="1" fill="none"></path>
+                    <path id="aqi-area" d="" fill="rgba(253,232,0,0.14)"></path>
+                    <path id="aqi-line" class="sparkline-path" stroke="#fde800" d=""></path>
+                </svg>
             </div>
         </div>
     </div>
@@ -263,27 +561,244 @@
 <!-- Global Glowing Background Orbs -->
 <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
 <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/5 blur-[150px] rounded-full -z-10 pointer-events-none"></div>
+<div id="toast" class="toast panel-card rounded-2xl border p-4">
+    <p id="toast-title" class="font-headline font-bold text-sm uppercase tracking-[0.18em]">Update</p>
+    <p id="toast-message" class="mt-2 text-sm text-on-surface-variant">Action completed.</p>
+</div>
 <script>
 const channelID = "3312919"; // Replace with your actual Channel ID
 const readKey = "5TUJ7HI3YCW8FLHP";
+const historyLimit = 24;
+const history = {
+    gas: [],
+    temp: [],
+    hum: [],
+    aqi: [],
+    status: []
+};
+let toastTimer;
+
+function parseValue(value) {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getAQI(gas, temp, hum) {
+    const gasScore = gas === null ? 0 : Math.min((gas / 1000) * 320, 320);
+    const tempPenalty = temp === null ? 0 : Math.max(Math.abs(temp - 24) * 4, 0);
+    const humPenalty = hum === null ? 0 : Math.max(Math.abs(hum - 50) * 1.2, 0);
+    return Math.max(0, Math.min(500, Math.round(gasScore + tempPenalty + humPenalty)));
+}
+
+function getAQIState(aqi) {
+    if (aqi <= 50) return { label: "GOOD", textClass: "text-secondary", chipClass: "bg-secondary/10 text-secondary", strokeClass: "stroke-secondary", icon: "air" };
+    if (aqi <= 100) return { label: "MODERATE", textClass: "text-primary", chipClass: "bg-primary/10 text-primary", strokeClass: "stroke-primary", icon: "airwave" };
+    if (aqi <= 150) return { label: "SENSITIVE", textClass: "text-tertiary", chipClass: "bg-tertiary/10 text-tertiary", strokeClass: "stroke-tertiary", icon: "warning" };
+    return { label: "UNHEALTHY", textClass: "text-error", chipClass: "bg-error/10 text-error", strokeClass: "stroke-error", icon: "masks" };
+}
+
+function pushHistory(key, value) {
+    if (value === null) return;
+    history[key].push(value);
+    if (history[key].length > historyLimit) {
+        history[key].shift();
+    }
+}
+
+function getTrendLabel(values) {
+    if (values.length < 2) return "Steady";
+    const delta = values[values.length - 1] - values[values.length - 2];
+    if (delta > 2) return "Rising";
+    if (delta < -2) return "Falling";
+    return "Steady";
+}
+
+function getComfortLabel(temp, hum) {
+    if (temp === null || hum === null) return "Unknown";
+    const tempOk = temp >= 20 && temp <= 28;
+    const humOk = hum >= 35 && hum <= 65;
+    if (tempOk && humOk) return "Comfortable";
+    if (temp > 32 || hum > 75) return "Poor";
+    return "Watch";
+}
+
+function getMetricStatus(type, value) {
+    if (value === null) return { label: "NO DATA", className: "bg-white/10 text-on-surface-variant" };
+    if (type === "gas") {
+        if (value <= 300) return { label: "OPTIMAL RANGE", className: "bg-secondary/10 text-secondary" };
+        if (value <= 700) return { label: "ELEVATED", className: "bg-tertiary/10 text-tertiary" };
+        return { label: "HAZARDOUS", className: "bg-error/10 text-error" };
+    }
+    if (type === "temp") {
+        if (value >= 20 && value <= 28) return { label: "STABLE", className: "bg-primary/10 text-primary" };
+        if (value >= 16 && value <= 32) return { label: "WATCH", className: "bg-tertiary/10 text-tertiary" };
+        return { label: "EXTREME", className: "bg-error/10 text-error" };
+    }
+    if (value >= 35 && value <= 65) return { label: "CONTROLLED", className: "bg-primary-fixed/10 text-primary-fixed" };
+    if (value >= 25 && value <= 75) return { label: "SHIFTING", className: "bg-tertiary/10 text-tertiary" };
+    return { label: "UNBALANCED", className: "bg-error/10 text-error" };
+}
+
+function setTheme(isDark) {
+    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.classList.toggle("light-theme", !isDark);
+    localStorage.setItem("luminous-theme", isDark ? "dark" : "light");
+    const themeIcon = document.getElementById("theme-icon");
+    themeIcon.textContent = isDark ? "light_mode" : "dark_mode";
+}
+
+function showToast(title, message) {
+    const toast = document.getElementById("toast");
+    document.getElementById("toast-title").innerText = title;
+    document.getElementById("toast-message").innerText = message;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+function renderGrid(targetId, width, height, lines) {
+    const step = height / lines;
+    const segments = [];
+    for (let i = 1; i < lines; i += 1) {
+        const y = (step * i).toFixed(1);
+        segments.push(`M 0 ${y} L ${width} ${y}`);
+    }
+    document.getElementById(targetId).setAttribute("d", segments.join(" "));
+}
+
+function buildPath(values, maxValue, width, height) {
+    if (!values.length) return "";
+    const step = values.length === 1 ? 0 : width / (values.length - 1);
+    return values
+        .map((value, index) => {
+            const x = (index * step).toFixed(1);
+            const y = (height - ((value / maxValue) * (height - 12) + 6)).toFixed(1);
+            return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+        })
+        .join(" ");
+}
+
+function buildArea(values, maxValue, width, height) {
+    if (!values.length) return "";
+    const path = buildPath(values, maxValue, width, height);
+    return `${path} L ${width} ${height} L 0 ${height} Z`;
+}
+
+function renderMiniChart(svgId, values, maxValue, strokeColor, fillColor, stepped = false) {
+    const svg = document.getElementById(svgId);
+    if (!svg) return;
+    const width = 1000;
+    const height = 210;
+    const step = values.length <= 1 ? 0 : width / (values.length - 1);
+    const line = values.map((value, index) => {
+        const x = (index * step).toFixed(1);
+        const y = (height - ((value / maxValue) * (height - 20) + 10)).toFixed(1);
+        if (index === 0) return `M ${x} ${y}`;
+        if (!stepped) return `L ${x} ${y}`;
+        return `L ${x} ${values[index - 1] === value ? y : (height - ((values[index - 1] / maxValue) * (height - 20) + 10)).toFixed(1)} L ${x} ${y}`;
+    }).join(" ");
+    const area = line ? `${line} L ${width} ${height} L 0 ${height} Z` : "";
+    svg.innerHTML = `
+        <path d="M 0 42 L ${width} 42 M 0 84 L ${width} 84 M 0 126 L ${width} 126 M 0 168 L ${width} 168" stroke="rgba(167,171,178,0.16)" stroke-width="1" fill="none"></path>
+        <path d="${area}" fill="${fillColor}"></path>
+        <path d="${line}" fill="none" stroke="${strokeColor}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"></path>
+    `;
+}
+
+function renderTrendCharts() {
+    renderGrid("overview-grid", 900, 220, 5);
+    renderGrid("aqi-grid", 1000, 240, 5);
+    document.getElementById("spark-gas").setAttribute("d", buildPath(history.gas, 1000, 900, 220));
+    document.getElementById("spark-temp").setAttribute("d", buildPath(history.temp, 50, 900, 220));
+    document.getElementById("spark-hum").setAttribute("d", buildPath(history.hum, 100, 900, 220));
+    document.getElementById("spark-aqi").setAttribute("d", buildPath(history.aqi, 500, 900, 220));
+    document.getElementById("aqi-line").setAttribute("d", buildPath(history.aqi, 500, 1000, 240));
+    document.getElementById("aqi-area").setAttribute("d", buildArea(history.aqi, 500, 1000, 240));
+    renderMiniChart("chart-gas", history.gas, 1000, "#2ff801", "rgba(47,248,1,0.12)");
+    renderMiniChart("chart-temp", history.temp, 50, "#99f7ff", "rgba(153,247,255,0.12)");
+    renderMiniChart("chart-hum", history.hum, 100, "#00f1fe", "rgba(0,241,254,0.12)");
+    renderMiniChart("chart-status", history.status, 3, "#ff716c", "rgba(255,113,108,0.12)", true);
+}
+
+async function fetchHistory() {
+    try {
+        const res = await fetch(`https://api.thingspeak.com/channels/${channelID}/feeds.json?api_key=${readKey}&results=${historyLimit}`);
+        const data = await res.json();
+        if (!Array.isArray(data.feeds)) return;
+        history.gas = [];
+        history.temp = [];
+        history.hum = [];
+        history.aqi = [];
+        history.status = [];
+        data.feeds.forEach((feed) => {
+            const gas = parseValue(feed.field1);
+            const temp = parseValue(feed.field2);
+            const hum = parseValue(feed.field3);
+            const status = parseValue(feed.field4);
+            const aqi = getAQI(gas, temp, hum);
+            pushHistory("gas", gas);
+            pushHistory("temp", temp);
+            pushHistory("hum", hum);
+            pushHistory("aqi", aqi);
+            pushHistory("status", status);
+        });
+        renderTrendCharts();
+    } catch (error) {
+        console.error("Error loading history:", error);
+    }
+}
 
 async function fetchData() {
     try {
         const res = await fetch(`https://api.thingspeak.com/channels/${channelID}/feeds/last.json?api_key=${readKey}`);
         const data = await res.json();
+        const gas = parseValue(data.field1);
+        const temp = parseValue(data.field2);
+        const hum = parseValue(data.field3);
+        const statusValue = parseValue(data.field4);
+        const aqi = getAQI(gas, temp, hum);
+        const aqiState = getAQIState(aqi);
 
         // Update Values
-        document.getElementById("gas-value").innerText = data.field1 || "--";
-        document.getElementById("temp-value").innerText = data.field2 || "--";
-        document.getElementById("hum-value").innerText = data.field3 || "--";
+        document.getElementById("gas-value").innerText = gas ?? "--";
+        document.getElementById("temp-value").innerText = temp ?? "--";
+        document.getElementById("hum-value").innerText = hum ?? "--";
+        document.getElementById("aqi-value").innerText = aqi;
 
         // Update Gauges
-        updateGauge("gas-fill", data.field1, 1000); // Assuming 1000 PPM max
-        updateGauge("temp-fill", data.field2, 50);   // Assuming 50 C max
-        updateGauge("hum-fill", data.field3, 100);  // 100% max
+        updateGauge("gas-fill", gas, 1000); // Assuming 1000 PPM max
+        updateGauge("temp-fill", temp, 50);   // Assuming 50 C max
+        updateGauge("hum-fill", hum, 100);  // 100% max
+        updateGauge("aqi-fill", aqi, 500);
+        const gasState = getMetricStatus("gas", gas);
+        const tempState = getMetricStatus("temp", temp);
+        const humState = getMetricStatus("hum", hum);
+        document.getElementById("gas-status-label").className = `px-3 py-1 text-[10px] font-bold rounded-full ${gasState.className}`;
+        document.getElementById("gas-status-label").innerText = gasState.label;
+        document.getElementById("temp-status-label").className = `px-3 py-1 text-[10px] font-bold rounded-full ${tempState.className}`;
+        document.getElementById("temp-status-label").innerText = tempState.label;
+        document.getElementById("hum-status-label").className = `px-3 py-1 text-[10px] font-bold rounded-full ${humState.className}`;
+        document.getElementById("hum-status-label").innerText = humState.label;
+        document.getElementById("aqi-fill").className = `gauge-fill ${aqiState.strokeClass}`;
+        document.getElementById("aqi-status-label").className = `px-3 py-1 text-[10px] font-bold rounded-full ${aqiState.chipClass}`;
+        document.getElementById("aqi-status-label").innerText = aqiState.label;
+        document.getElementById("aqi-icon").className = `material-symbols-outlined ${aqiState.textClass}`;
+        document.getElementById("aqi-icon").innerText = aqiState.icon;
+        document.getElementById("aqi-band").innerText = aqiState.label;
 
         // Update Status
         updateStatus(data.field4);
+
+        // Update Summary
+        pushHistory("gas", gas);
+        pushHistory("temp", temp);
+        pushHistory("hum", hum);
+        pushHistory("aqi", aqi);
+        pushHistory("status", statusValue);
+        renderTrendCharts();
+        document.getElementById("last-updated").innerText = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        document.getElementById("gas-trend").innerText = getTrendLabel(history.gas);
+        document.getElementById("comfort-score").innerText = getComfortLabel(temp, hum);
 
     } catch (error) {
         console.error("Error loading data:", error);
@@ -296,7 +811,7 @@ async function fetchData() {
 
 function updateGauge(id, value, max) {
     const fill = document.getElementById(id);
-    if (!fill || value === undefined) return;
+    if (!fill || value === undefined || value === null) return;
     const circumference = 251.2;
     const percentage = Math.min(Math.max(value / max, 0), 1);
     const offset = circumference - (percentage * circumference);
@@ -344,56 +859,62 @@ const topNavAnalytics = document.getElementById("top-nav-analytics");
 function showDashboard() {
     dashboardView.classList.remove("hidden");
     analyticsView.classList.add("hidden");
-    
-    const activeClass = "bg-cyan-500/10 text-cyan-400 border-r-4 border-cyan-400 px-6 py-4 flex items-center gap-4 group transition-all duration-200 cursor-pointer";
+
+    const activeClass = "bg-blue-600/10 text-blue-600 border-r-4 border-blue-600 px-6 py-4 flex items-center gap-4 group transition-all duration-200 cursor-pointer";
     const inactiveClass = "text-neutral-500 px-6 py-4 flex items-center gap-4 hover:text-neutral-300 hover:bg-white/5 group transition-all duration-200 cursor-pointer";
-    
+
     navDashboard.className = activeClass;
     navAnalytics.className = inactiveClass;
-    
-    topNavDashboard.className = "text-cyan-400 drop-shadow-[0_0_8px_rgba(0,242,255,0.6)] font-bold cursor-pointer";
+
+    topNavDashboard.className = "text-blue-600 font-bold cursor-pointer";
     topNavAnalytics.className = "text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer";
 }
 
 function showAnalytics() {
     dashboardView.classList.add("hidden");
     analyticsView.classList.remove("hidden");
-    
-    const activeClass = "bg-cyan-500/10 text-cyan-400 border-r-4 border-cyan-400 px-6 py-4 flex items-center gap-4 group transition-all duration-200 cursor-pointer";
+
+    const activeClass = "bg-blue-600/10 text-blue-600 border-r-4 border-blue-600 px-6 py-4 flex items-center gap-4 group transition-all duration-200 cursor-pointer";
     const inactiveClass = "text-neutral-500 px-6 py-4 flex items-center gap-4 hover:text-neutral-300 hover:bg-white/5 group transition-all duration-200 cursor-pointer";
-    
+
     navAnalytics.className = activeClass;
     navDashboard.className = inactiveClass;
-    
-    topNavAnalytics.className = "text-cyan-400 drop-shadow-[0_0_8px_rgba(0,242,255,0.6)] font-bold cursor-pointer";
+
+    topNavAnalytics.className = "text-blue-600 font-bold cursor-pointer";
     topNavDashboard.className = "text-neutral-400 hover:text-neutral-200 transition-colors cursor-pointer";
-    
+
     loadCharts();
 }
 
 function loadCharts() {
-    if (channelID === "YOUR_CHANNEL_ID") return;
-    
-    const gasChart = document.getElementById("chart-gas");
-    const tempChart = document.getElementById("chart-temp");
-    const humChart = document.getElementById("chart-hum");
-    const statusChart = document.getElementById("chart-status");
-    
-    if (!gasChart.src) {
-        gasChart.src = `https://api.thingspeak.com/channels/${channelID}/charts/1?bgcolor=%230a0f14&color=%232ff801&dynamic=true&results=60&type=line&update=15&title=LPG+Level&yaxis=PPM`;
-        tempChart.src = `https://api.thingspeak.com/channels/${channelID}/charts/2?bgcolor=%230a0f14&color=%2399f7ff&dynamic=true&results=60&type=line&update=15&title=Temperature&yaxis=Celsius`;
-        humChart.src = `https://api.thingspeak.com/channels/${channelID}/charts/3?bgcolor=%230a0f14&color=%2300f1fe&dynamic=true&results=60&type=line&update=15&title=Humidity&yaxis=Percent`;
-        statusChart.src = `https://api.thingspeak.com/channels/${channelID}/charts/4?bgcolor=%230a0f14&color=%23ff716c&dynamic=true&results=60&type=step&update=15&title=System+Status&yaxis=Level`;
-    }
+    renderTrendCharts();
 }
 
 navDashboard.addEventListener("click", showDashboard);
 navAnalytics.addEventListener("click", showAnalytics);
 topNavDashboard.addEventListener("click", showDashboard);
 topNavAnalytics.addEventListener("click", showAnalytics);
+document.getElementById("theme-toggle").addEventListener("click", () => {
+    const isDark = !document.documentElement.classList.contains("dark");
+    setTheme(isDark);
+    renderTrendCharts();
+    showToast("Theme Updated", isDark ? "Dark mode enabled." : "Light mode softened for better readability.");
+});
+document.getElementById("refresh-button").addEventListener("click", fetchData);
+document.getElementById("notify-button").addEventListener("click", () => {
+    const aqi = history.aqi[history.aqi.length - 1];
+    const statusText = document.getElementById("status-text").innerText.replace("SYSTEM STATUS: ", "");
+    showToast("Live Snapshot", `AQI ${aqi ?? "--"} | Status ${statusText}.`);
+});
+document.getElementById("settings-button").addEventListener("click", () => {
+    showAnalytics();
+    showToast("Analytics Opened", "Jumped to the detailed trend view.");
+});
 
 // Initial Fetch
+setTheme(document.documentElement.classList.contains("dark"));
 if (channelID !== "YOUR_CHANNEL_ID") {
+    fetchHistory();
     setInterval(fetchData, 5000);
     fetchData();
 } else {
